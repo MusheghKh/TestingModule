@@ -106,22 +106,22 @@ QString MainWindow::openSelectFileDialog()
 void MainWindow::on_startButton_1_clicked()
 {
     QProcess* process = new QProcess();
-    process->start(ui->edit_1_1->text());
+    process->startDetached(ui->edit_1_1->text());
 
 //    process->waitForStarted();
 //    qDebug() << QString("Start");
     qint64 start = QDateTime::currentMSecsSinceEpoch();
     qDebug() << start;
 
-    while(true)
-    {
-        if(process->state() == QProcess::Running)
-        {
-            qDebug() << QString("Running");
-            qDebug() << QDateTime::currentMSecsSinceEpoch() - start;
-            break;
-        }
-    }
+//    while(true)
+//    {
+//        if(process->state() == QProcess::Running)
+//        {
+//            qDebug() << QString("Running");
+//            qDebug() << QDateTime::currentMSecsSinceEpoch() - start;
+//            break;
+//        }
+//    }
 
     qDebug() << process->program();
     qDebug() << process->processId();
