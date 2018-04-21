@@ -16,17 +16,12 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ChartsHelper chartsHelper = ChartsHelper("title2");
-    chartsHelper.appendPart("first", 17.4);
-    chartsHelper.appendSlicePart("seconf", 38.2);
-    chartsHelper.appendPart("final", 44.4);
-    ui->horizontalLayout11->addWidget(chartsHelper.biuldChart());
-
     ram = ProcessUtil::getSystemRam();
 }
 
 MainWindow::~MainWindow()
 {
+    delete timer;
     delete ui;
 }
 
@@ -70,11 +65,33 @@ void MainWindow::on_startButton_1_clicked()
     process.start();
     process.waitForStarted();
 
-    showProcessData(process.processId());
+    pid = process.processId();
+    showProcessData();
+
+    process.waitForFinished(-1);
 }
 
-void MainWindow::showProcessData(qint64 processId){
-    QMap<QString, QString> data = ProcessUtil::getProcessData(processId);
+void clearWidgets(QLayout * layout) {
+   if (! layout)
+      return;
+   while (auto item = layout->takeAt(0)) {
+      delete item->widget();
+      clearWidgets(item->layout());
+   }
+}
+
+void MainWindow::showProcessData(){
+    if(timer != 0){
+        timer->stop();
+        delete timer;
+        timer = 0;
+    }
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(showProcessData()));
+    timer->start(15000);
+
+    clearWidgets(ui->horizontalLayout11);
+    QMap<QString, QString> data = ProcessUtil::getProcessData(pid);
 
     const QString& memUsage = data.value("MemUsage");
     QString mem = memUsage.left(memUsage.length() - 1).replace(",", "");
@@ -90,4 +107,16 @@ void MainWindow::showProcessData(qint64 processId){
     chartsHelper.appendPart(QString("%1K").arg(1024 * ram.toInt() - memory), systemPart);
     ui->horizontalLayout11->addWidget(chartsHelper.biuldChart());
 
+    QTime processCPU = QTime::fromString(data.value("CPUTime"));
+    int processCPUTime = processCPU.hour() * 60 + processCPU.minute();
+    processCPUTime = processCPUTime * 60 + processCPU.second();
+
+    int idleCPUTime = ProcessUtil::getIdleCPUTime();
+
+    appPart = (processCPUTime / idleCPUTime) * 100;
+    systemPart = 100 - appPart;
+    chartsHelper.reset("CPU Load");
+    chartsHelper.appendSlicePart(QString("%1%").arg(appPart), appPart);
+    chartsHelper.appendPart(QString("%1%").arg(systemPart), systemPart);
+    ui->horizontalLayout11->addWidget(chartsHelper.biuldChart());
 }

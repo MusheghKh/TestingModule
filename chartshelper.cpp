@@ -10,12 +10,14 @@ ChartsHelper::ChartsHelper(const QString &title)
 void ChartsHelper::appendPart(QString label, qreal percent)
 {
     QPieSlice *slice = series->append(label, percent);
+    slice->setColor(" #4F1B68");
     slice->setLabelVisible();
 }
 
 void ChartsHelper::appendSlicePart(QString label, qreal percent)
 {
     QPieSlice *slice = series->append(label, percent);
+    slice->setColor(QColor("#D90404"));
     slice->setExploded();
     slice->setLabelVisible();
 }

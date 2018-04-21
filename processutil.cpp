@@ -1,5 +1,6 @@
 #include "processutil.h"
 
+#include <QTime>
 #include <QDebug>
 #include <QProcess>
 #include <sstream>
@@ -120,4 +121,15 @@ QString ProcessUtil::getSystemRam(){
     } else {
         return "Unknown";
     }
+}
+
+int ProcessUtil::getIdleCPUTime(){
+    QMap<QString, QString> idleData = getProcessData(0);
+    const QString& timeString = idleData.value("CPUTime");
+    QTime time = QTime::fromString(timeString);
+
+    int result = time.hour() * 60 + time.minute();
+    result = result * 60 + time.second();
+
+    return result;
 }

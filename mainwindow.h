@@ -26,14 +26,19 @@ private slots:
 
     void on_startButton_1_clicked();
 
-    void showProcessData(qint64 processId);
+    void showProcessData();
 
 private:
     Ui::MainWindow *ui;
 
     QString openSelectFileDialog();
 
+    qint64 pid;
+    qint64 pid1;
+    qint64 pid2;
     QString ram;
+
+    QTimer* timer = 0;
 };
 
 #endif // MAINWINDOW_H

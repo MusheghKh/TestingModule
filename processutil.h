@@ -16,6 +16,7 @@ public:
 //    static void printAllMemeoryInfo();
     static QMap<QString, QString> getProcessData(qint64 pid);
     static QString getSystemRam();
+    static int getIdleCPUTime();
 };
 
 #endif // PROCESSUTIL_H
