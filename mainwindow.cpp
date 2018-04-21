@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QDateTime>
+#include <QMap>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -15,22 +16,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ChartsHelper* chartsHelper = new ChartsHelper("some Title Baby");
-    chartsHelper->appendSlicePart("first", 17.4);
-    chartsHelper->appendPart("seconf", 38.2);
-    chartsHelper->appendPart("final", 44.4);
+    ChartsHelper chartsHelper = ChartsHelper("title2");
+    chartsHelper.appendPart("first", 17.4);
+    chartsHelper.appendSlicePart("seconf", 38.2);
+    chartsHelper.appendPart("final", 44.4);
+    ui->horizontalLayout11->addWidget(chartsHelper.biuldChart());
 
-    ui->horizontalLayout11->addWidget(chartsHelper->biuldChart());
-
-    chartsHelper = new ChartsHelper("title2");
-    chartsHelper->appendPart("first", 17.4);
-    chartsHelper->appendSlicePart("seconf", 38.2);
-    chartsHelper->appendPart("final", 44.4);
-
-    ui->horizontalLayout11->addWidget(chartsHelper->biuldChart());
-
-
-    ProcessUtil::printAllMemeoryInfo();
+    ram = ProcessUtil::getSystemRam();
 }
 
 MainWindow::~MainWindow()
@@ -58,74 +50,44 @@ void MainWindow::on_button_2_2_clicked()
     ui->edit_2_2->setText(openSelectFileDialog());
 }
 
-void MainWindow::on_button_3_1_clicked()
-{
-    ui->edit_3_1->setText(openSelectFileDialog());
-}
-
-void MainWindow::on_button_3_2_clicked()
-{
-    ui->edit_3_2->setText(openSelectFileDialog());
-}
-
-void MainWindow::on_button_3_3_clicked()
-{
-    ui->edit_3_3->setText(openSelectFileDialog());
-}
-
-void MainWindow::on_button_4_1_clicked()
-{
-    ui->edit_4_1->setText(openSelectFileDialog());
-}
-
-void MainWindow::on_button_4_2_clicked()
-{
-    ui->edit_4_2->setText(openSelectFileDialog());
-}
-
-void MainWindow::on_button_4_3_clicked()
-{
-    ui->edit_4_3->setText(openSelectFileDialog());
-}
-
-void MainWindow::on_button_4_4_clicked()
-{
-    ui->edit_4_4->setText(openSelectFileDialog());
-}
-
 QString MainWindow::openSelectFileDialog()
 {
-    return QFileDialog::getOpenFileName(
+    QString result = QFileDialog::getOpenFileName(
                 this,
                 "Select .exe file",
                 QDir::homePath(),
                 "Executable (*.exe)"
-                );
+            );
+    return QDir::toNativeSeparators(result);
 }
 
 void MainWindow::on_startButton_1_clicked()
 {
-    QProcess* process = new QProcess();
-    process->startDetached(ui->edit_1_1->text());
+    QProcess process;
+    QString path = ui->edit_1_1->text();
+    qDebug() << path;
+    process.setProgram(path);
+    process.start();
+    process.waitForStarted();
 
-//    process->waitForStarted();
-//    qDebug() << QString("Start");
-    qint64 start = QDateTime::currentMSecsSinceEpoch();
-    qDebug() << start;
+    showProcessData(process.processId());
+}
 
-//    while(true)
-//    {
-//        if(process->state() == QProcess::Running)
-//        {
-//            qDebug() << QString("Running");
-//            qDebug() << QDateTime::currentMSecsSinceEpoch() - start;
-//            break;
-//        }
-//    }
+void MainWindow::showProcessData(qint64 processId){
+    QMap<QString, QString> data = ProcessUtil::getProcessData(processId);
 
-    qDebug() << process->program();
-    qDebug() << process->processId();
+    const QString& memUsage = data.value("MemUsage");
+    QString mem = memUsage.left(memUsage.length() - 1).replace(",", "");
+    int memory = mem.toInt();
 
-    process->waitForFinished();
-    qDebug() << process->exitCode();
+    double appPart = memory / (1024 * ram.toInt());
+    if(appPart == 0){
+        appPart = 1;
+    }
+    double systemPart = 100 - appPart;
+    ChartsHelper chartsHelper("RAM Usage");
+    chartsHelper.appendSlicePart(QString("%1K").arg(memory), appPart);
+    chartsHelper.appendPart(QString("%1K").arg(1024 * ram.toInt() - memory), systemPart);
+    ui->horizontalLayout11->addWidget(chartsHelper.biuldChart());
+
 }
