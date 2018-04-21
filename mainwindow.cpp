@@ -17,11 +17,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     ram = ProcessUtil::getSystemRam();
+
+    ui->info->setText(ProcessUtil::getAllTasks());
 }
 
 MainWindow::~MainWindow()
 {
-    delete timer;
+    delete process;
+    delete process1;
+    delete process2;
     delete ui;
 }
 
@@ -58,17 +62,17 @@ QString MainWindow::openSelectFileDialog()
 
 void MainWindow::on_startButton_1_clicked()
 {
-    QProcess process;
+    delete process;
+    process = new QProcess();
     QString path = ui->edit_1_1->text();
     qDebug() << path;
-    process.setProgram(path);
-    process.start();
-    process.waitForStarted();
+    process->setProgram(path);
+    process->start();
+    process->waitForStarted();
 
-    pid = process.processId();
     showProcessData();
 
-    process.waitForFinished(-1);
+//    process->waitForFinished(-1);
 }
 
 void clearWidgets(QLayout * layout) {
@@ -81,17 +85,11 @@ void clearWidgets(QLayout * layout) {
 }
 
 void MainWindow::showProcessData(){
-    if(timer != 0){
-        timer->stop();
-        delete timer;
-        timer = 0;
+    clearWidgets(ui->horizontalLayout_4);
+    if(process == nullptr){
+        return;
     }
-    timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(showProcessData()));
-    timer->start(15000);
-
-    clearWidgets(ui->horizontalLayout11);
-    QMap<QString, QString> data = ProcessUtil::getProcessData(pid);
+    QMap<QString, QString> data = ProcessUtil::getProcessData(process->processId());
 
     const QString& memUsage = data.value("MemUsage");
     QString mem = memUsage.left(memUsage.length() - 1).replace(",", "");
@@ -105,18 +103,111 @@ void MainWindow::showProcessData(){
     ChartsHelper chartsHelper("RAM Usage");
     chartsHelper.appendSlicePart(QString("%1K").arg(memory), appPart);
     chartsHelper.appendPart(QString("%1K").arg(1024 * ram.toInt() - memory), systemPart);
-    ui->horizontalLayout11->addWidget(chartsHelper.biuldChart());
+    ui->horizontalLayout_4->addWidget(chartsHelper.biuldChart());
 
-    QTime processCPU = QTime::fromString(data.value("CPUTime"));
-    int processCPUTime = processCPU.hour() * 60 + processCPU.minute();
-    processCPUTime = processCPUTime * 60 + processCPU.second();
+    QString processCPU = data.value("CPUTime");
+    int hour = processCPU.left(2).toInt();
+    int minute = processCPU.mid(4, 2).toInt();
+    int seconds = processCPU.right(2).toInt();
+    int processCPUTime = hour * 60 + minute;
+    processCPUTime = processCPUTime * 60 + seconds;
 
     int idleCPUTime = ProcessUtil::getIdleCPUTime();
 
     appPart = (processCPUTime / idleCPUTime) * 100;
     systemPart = 100 - appPart;
+    QDir dir(process->program());
+
     chartsHelper.reset("CPU Load");
-    chartsHelper.appendSlicePart(QString("%1%").arg(appPart), appPart);
+    chartsHelper.appendSlicePart(QString("%1 %2%").arg(dir.dirName(), QString::number(appPart)), appPart);
     chartsHelper.appendPart(QString("%1%").arg(systemPart), systemPart);
-    ui->horizontalLayout11->addWidget(chartsHelper.biuldChart());
+    ui->horizontalLayout_4->addWidget(chartsHelper.biuldChart());
+}
+
+void MainWindow::showProcessData2(){
+    clearWidgets(ui->horizontalLayout_6);
+    if(process1 == nullptr || process2 == nullptr){
+        return;
+    }
+    QMap<QString, QString> data1 = ProcessUtil::getProcessData(process1->processId());
+    QMap<QString, QString> data2 = ProcessUtil::getProcessData(process2->processId());
+
+    const QString& memUsage = data1.value("MemUsage");
+    int memory1 = memUsage.left(memUsage.length() - 1).replace(",", "").toInt();
+    const QString& memUsage2 = data2.value("MemUsage");
+    int memory2 = memUsage2.left(memUsage2.length() - 1).replace(",", "").toInt();
+
+    double appPart1 = memory1 / (1024 * ram.toInt());
+    if(appPart1 == 0){
+        appPart1 = 1;
+    }
+    double appPart2 = memory2 / (1024 * ram.toInt());
+    if(appPart2 == 0){
+        appPart2 = 1;
+    }
+    double systemPart = 100 - appPart1 - appPart2;
+    QDir dir1(process1->program());
+    QDir dir2(process2->program());
+    ChartsHelper chartsHelper("RAM Usage");
+    chartsHelper.appendSlicePart(QString("%1 %2K").arg(dir1.dirName(), QString::number(memory1)), appPart1);
+    chartsHelper.appendSlicePart(QString("%1 %2K").arg(dir2.dirName(), QString::number(memory2)), appPart2);
+    chartsHelper.appendPart(QString("%1K").arg(1024 * ram.toInt() - memory1 - memory2), systemPart);
+    ui->horizontalLayout_6->addWidget(chartsHelper.biuldChart());
+
+    QString process1CPU = data1.value("CPUTime");
+    int hour = process1CPU.left(2).toInt();
+    int minute = process1CPU.mid(4, 2).toInt();
+    int seconds = process1CPU.right(2).toInt();
+
+    int process1CPUTime = hour * 60 + minute;
+    process1CPUTime = process1CPUTime * 60 + seconds;
+
+    QString process2CPU = data2.value("CPUTime");
+    hour = process2CPU.left(2).toInt();
+    minute = process2CPU.mid(4, 2).toInt();
+    seconds = process2CPU.right(2).toInt();
+
+    int process2CPUTime = hour * 60 + minute;
+    process2CPUTime = process2CPUTime * 60 + seconds;
+
+    int idleCPUTime = ProcessUtil::getIdleCPUTime();
+
+    appPart1 = (process1CPUTime / idleCPUTime) * 100;
+    systemPart = 100 - appPart1 - appPart2;
+    chartsHelper.reset("CPU Load");
+    chartsHelper.appendSlicePart(QString("%1 %2%").arg(dir1.dirName(), QString::number(appPart1)), appPart1);
+    chartsHelper.appendSlicePart(QString("%1 %2%").arg(dir2.dirName(), QString::number(appPart2)), appPart2);
+    chartsHelper.appendPart(QString("%1%").arg(systemPart), systemPart);
+    ui->horizontalLayout_6->addWidget(chartsHelper.biuldChart());
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    showProcessData();
+}
+
+void MainWindow::on_startButton_2_clicked()
+{
+    delete process1;
+    delete process2;
+    process1 = new QProcess();
+    process2 = new QProcess();
+    QString path1 = ui->edit_2_1->text();
+    QString path2 = ui->edit_2_2->text();
+    qDebug() << path1;
+    qDebug() << path2;
+    process1->setProgram(path1);
+    process1->start();
+    process1->waitForStarted();
+
+    process2->setProgram(path2);
+    process2->start();
+    process2->waitForStarted();
+
+    showProcessData2();
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    showProcessData2();
 }

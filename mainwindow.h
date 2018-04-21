@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QProcess>
 #include <QMainWindow>
 
 namespace Ui {
@@ -28,17 +29,24 @@ private slots:
 
     void showProcessData();
 
+    void showProcessData2();
+
+    void on_pushButton_clicked();
+
+    void on_startButton_2_clicked();
+
+    void on_pushButton_2_clicked();
+
 private:
     Ui::MainWindow *ui;
 
     QString openSelectFileDialog();
 
-    qint64 pid;
-    qint64 pid1;
-    qint64 pid2;
     QString ram;
 
-    QTimer* timer = 0;
+    QProcess* process = nullptr;
+    QProcess* process1 = nullptr;
+    QProcess* process2 = nullptr;
 };
 
 #endif // MAINWINDOW_H

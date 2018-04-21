@@ -4,20 +4,18 @@ ChartsHelper::ChartsHelper(const QString &title)
 {
     chartTitle = title;
     series = new QPieSeries();
-    series->setHoleSize(0.35);
+    series->setHoleSize(0.1);
 }
 
 void ChartsHelper::appendPart(QString label, qreal percent)
 {
     QPieSlice *slice = series->append(label, percent);
-    slice->setColor(" #4F1B68");
     slice->setLabelVisible();
 }
 
 void ChartsHelper::appendSlicePart(QString label, qreal percent)
 {
     QPieSlice *slice = series->append(label, percent);
-    slice->setColor(QColor("#D90404"));
     slice->setExploded();
     slice->setLabelVisible();
 }

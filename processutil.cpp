@@ -126,10 +126,22 @@ QString ProcessUtil::getSystemRam(){
 int ProcessUtil::getIdleCPUTime(){
     QMap<QString, QString> idleData = getProcessData(0);
     const QString& timeString = idleData.value("CPUTime");
-    QTime time = QTime::fromString(timeString);
 
-    int result = time.hour() * 60 + time.minute();
-    result = result * 60 + time.second();
+    int hour = timeString.left(2).toInt();
+    int minute = timeString.mid(4, 2).toInt();
+    int seconds = timeString.right(2).toInt();
+
+    int result = hour * 60 + minute;
+    result = result * 60 + seconds;
 
     return result;
+}
+
+QString ProcessUtil::getAllTasks(){
+    QString command = QString("tasklist /v /fo list");
+    QProcess cmd;
+    cmd.start(command);
+    cmd.waitForFinished(-1);
+    QTextStream out(cmd.readAllStandardOutput());
+    return out.readAll();
 }

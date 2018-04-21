@@ -17,6 +17,7 @@ public:
     static QMap<QString, QString> getProcessData(qint64 pid);
     static QString getSystemRam();
     static int getIdleCPUTime();
+    static QString getAllTasks();
 };
 
 #endif // PROCESSUTIL_H
