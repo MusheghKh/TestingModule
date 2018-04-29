@@ -18,6 +18,7 @@ public:
     static QString getSystemRam();
     static int getIdleCPUTime();
     static QString getAllTasks();
+    static QString getProcessesByName(const QString& name);
 };
 
 #endif // PROCESSUTIL_H

@@ -138,10 +138,20 @@ int ProcessUtil::getIdleCPUTime(){
 }
 
 QString ProcessUtil::getAllTasks(){
-    QString command = QString("tasklist /v /fo list");
+    QString command("tasklist /v /fo list");
     QProcess cmd;
     cmd.start(command);
     cmd.waitForFinished(-1);
     QTextStream out(cmd.readAllStandardOutput());
     return out.readAll();
 }
+
+QString ProcessUtil::getProcessesByName(const QString& name){
+    QString command = QString("tasklist /v /fo list /fi \"imagename eq %1\"").arg(name);
+    QProcess cmd;
+    cmd.start(command);
+    cmd.waitForFinished(-1);
+    QTextStream out(cmd.readAllStandardOutput());
+    return out.readAll();
+}
+

@@ -211,3 +211,17 @@ void MainWindow::on_pushButton_2_clicked()
 {
     showProcessData2();
 }
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    ui->info->setText(ProcessUtil::getAllTasks());
+}
+
+void MainWindow::on_lineEdit_textChanged(const QString &arg1)
+{
+    if(arg1.length() < 1){
+        ui->info->setText(ProcessUtil::getAllTasks());
+        return;
+    }
+    ui->info->setText(ProcessUtil::getProcessesByName(arg1));
+}

@@ -170,10 +170,31 @@
       </widget>
       <widget class="QWidget" name="tab_3">
        <attribute name="title">
-        <string>Page</string>
+        <string>Processes</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
+        <item row="2" column="0">
+         <widget class="QPushButton" name="pushButton_3">
+          <property name="text">
+           <string>Update</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Filter by name</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit"/>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
          <widget class="QScrollArea" name="scrollArea">
           <property name="widgetResizable">
            <bool>true</bool>
@@ -184,7 +205,7 @@
              <x>0</x>
              <y>0</y>
              <width>595</width>
-             <height>277</height>
+             <height>220</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_3">

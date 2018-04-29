@@ -10,14 +10,14 @@ ChartsHelper::ChartsHelper(const QString &title)
 void ChartsHelper::appendPart(QString label, qreal percent)
 {
     QPieSlice *slice = series->append(label, percent);
-    slice->setLabelVisible();
+//    slice->setLabelVisible();
 }
 
 void ChartsHelper::appendSlicePart(QString label, qreal percent)
 {
     QPieSlice *slice = series->append(label, percent);
     slice->setExploded();
-    slice->setLabelVisible();
+//    slice->setLabelVisible();
 }
 
 
